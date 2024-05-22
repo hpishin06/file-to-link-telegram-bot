@@ -37,13 +37,31 @@ ADMIN_ID = "fibonadev"
 HOST = "https://kittymc.ir/ups"
 LOG_ID = 2459778
 chat_ids = {}
+data_to_add = {
+    "444": {
+        "file_size_limit": "1222"
+    }
+}
+
 if os.path.exists("chat_ids.json"):
-    with open("chat_ids.json", "r") as f:
-        chat_ids = json.load(f)
+    try:
+        with open("chat_ids.json", "r") as f:
+            chat_ids = json.load(f)
+    except json.JSONDecodeError:
+        print("Error: Invalid JSON data in chat_ids.json")
+        print("FIXED!")
+        chat_ids = {}
+    
+    chat_ids.update(data_to_add)
+    
+    with open("chat_ids.json", "w") as f:
+        json.dump(chat_ids, f, indent=4)
+else:
+    with open("chat_ids.json", "w") as f:
+        json.dump(data_to_add, f, indent=4)
+    chat_ids = data_to_add
 if not os.path.exists("ups"):
     os.makedirs("ups")
-
-# Start command handler
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
     chat_id = message.chat.id
@@ -53,7 +71,7 @@ async def start_command(client, message):
         with open("chat_ids.json", "w") as f:
             json.dump(chat_ids, f)
 
-    await message.reply(f"Welcome!\nThis is the file to link conversion bot!\nSend your file and I'll upload it for you.\nAllowed file size: {file_size_limit} MB", reply_markup=ReplyKeyboardMarkup(
+    await message.reply(f"Welcome!\nThis is the file to link conversion bot!\nSend your file and I'll upload it for you.\nAllowed file size: {file_size_limit / (1024 * 1024)} MB", reply_markup=ReplyKeyboardMarkup(
         keyboard=[
             ["My Account"],
             ["Support"]
@@ -63,13 +81,17 @@ async def start_command(client, message):
 
 # Account button handler
 @app.on_message(filters.regex('^My Account$'))
+
 async def handle_account(client, message):
     chat_id = message.chat.id
     username = message.from_user.username
-    size_limit = chat_ids[str(chat_id)]["file_size_limit"]
+    if str(chat_id) not in chat_ids:
+        chat_ids[str(chat_id)] = {"file_size_limit": user_file_size_limit}
+    size_limit = chat_ids[str(chat_id)]["file_size_limit"] 
     await message.reply(f"CHAT ID: {chat_id}\nUSERNAME: @{username}\nRemaining file size: {size_limit} MB\nAllowed file size: {file_size_limit} MB")
+    with open("chat_ids.json", "w") as f:
+        json.dump(chat_ids, f)
 
-# Support button handler
 @app.on_message(filters.regex('^Support$'))
 async def handle_support(client, message):
     await message.reply(f"Bot support: @{ADMIN_ID}")
@@ -77,6 +99,7 @@ async def handle_support(client, message):
 # Media file handler
 @app.on_message(filters.document | filters.photo | filters.video)
 async def handle_media(client, message):
+    
     chat_id = message.chat.id
     user_id = message.from_user.id
     username = message.from_user.username
@@ -119,7 +142,7 @@ async def handle_media(client, message):
     )
     downloaded = await message.download(file_path)
     original_size = file_size
-    if downloaded == original_size:
+    if downloaded :
         await app.edit_message_text(
             chat_id=message.chat.id,
             message_id=message.id + 1 ,
@@ -143,4 +166,4 @@ async def handle_media(client, message):
     with open("chat_ids.json", "w") as f:
         json.dump(chat_ids, f)
 
-app.run()
+app.run() 
