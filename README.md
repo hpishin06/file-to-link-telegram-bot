@@ -16,7 +16,7 @@
   <h1>ENGLISH</h1>
 <p>In the first step, edit the file in Public HTML and create a folder called ups. </p>
 <p>Put your API ID in line 26</p>
-<p> Put your epihash on line 27</p>
+<p> Put your api HASH on line 27</p>
 <p>Put your robot token in line 28</p>
 <p>In line 33, specify the allowed size per file</p>
 <p>In line 35, specify the allowed volume for each user.</p>
